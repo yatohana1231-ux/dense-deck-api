@@ -1,4 +1,4 @@
-import { cardId, parseCardId } from "../cards/deck.js";
+import { cardId, parseCardId, generateDeck } from "../cards/deck.js";
 import type { CardType } from "../cards/types.js";
 import type { DealInput, DealResult } from "./types.js";
 import { getPrep } from "./prepCache.js";
@@ -32,8 +32,7 @@ export function dealBoardReserved(input: BoardDealInput): string[] {
   }
 
   // 足りない分をデッキから補充（全52枚から順に）
-  const prepDense = getPrep("dense"); // deckはモードに依存しないのでdenseを使い回し
-  const deck: CardType[] = prepDense.deck ?? [];
+  const deck: CardType[] = generateDeck();
   for (const c of deck) {
     if (board.length >= 10) break;
     const id = cardId(c);
