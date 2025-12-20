@@ -12,27 +12,21 @@ function randomUUID(): string {
 }
 
 type BoardDealInput = {
-  preset?: string[];
   avoid: string[]; // already-used card ids
 };
 
-// boardReserved を10枚確定する（presetを優先使用、重複は除外）
+// boardReserved を10枚確定する（重みなしランダム、presetなし）
 export function dealBoardReserved(input: BoardDealInput): string[] {
-  const { preset = [], avoid } = input;
+  const { avoid } = input;
   const used = new Set<string>(avoid);
   const board: string[] = [];
 
-  // preset を重複チェックしながら詰める
-  for (const id of preset) {
-    if (board.length >= 10) break;
-    const parsed = cardId(parseCardId(id)); // 正規化
-    if (used.has(parsed)) continue;
-    used.add(parsed);
-    board.push(parsed);
-  }
-
-  // 足りない分をデッキから補充（全52枚から順に）
   const deck: CardType[] = generateDeck();
+  // フィッシャー–イェーツでシャッフル（重み付けなしランダム）
+  for (let i = deck.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [deck[i], deck[j]] = [deck[j], deck[i]];
+  }
   for (const c of deck) {
     if (board.length >= 10) break;
     const id = cardId(c);
