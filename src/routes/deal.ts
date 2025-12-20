@@ -1,7 +1,8 @@
 import type { FastifyInstance } from "fastify";
 import { assert } from "../utils/assert.js";
 import type { Mode } from "../domain/dealing/types.js";
-import { dealHands } from "../domain/dealing/dealEngine.js";
+import { dealHands, dealBoardReserved } from "../domain/dealing/dealEngine.js";
+import { parseCardId, cardId } from "../domain/cards/deck.js";
 
 type DealRequest = {
   seatCount?: number;
@@ -36,14 +37,25 @@ export async function registerDealRoutes(app: FastifyInstance) {
 
     assert(Array.isArray(boardReserved), "boardReserved must be array");
 
+    // boardReserved を10枚確定。リクエストが不足していればサーバ側で生成。
+    let ensuredBoard = boardReserved;
+    if (!Array.isArray(ensuredBoard) || ensuredBoard.length < 10) {
+      ensuredBoard = dealBoardReserved({ preset: boardReserved, avoid: [] });
+    } else {
+      ensuredBoard = ensuredBoard.map((id) => cardId(parseCardId(id)));
+    }
+
+    // boardReserved と重複しないようにハンドを配布。
     const result = dealHands({
       seatCount,
       playerOrder,
-      boardReserved,
+      boardReserved: ensuredBoard,
       mode
     });
 
-    return reply.send(result);
+    return reply.send({
+      ...result,
+      boardReserved: ensuredBoard,
+    });
   });
 }
-
