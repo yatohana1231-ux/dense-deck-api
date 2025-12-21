@@ -8,12 +8,13 @@
     "start": "node dist/index.js"
   },
   "dependencies": {
+    "@prisma/client": "^6.19.1",
     "fastify": "^4.28.1"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
+    "prisma": "^6.19.1",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2"
   }
 }
-

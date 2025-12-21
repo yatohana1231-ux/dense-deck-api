@@ -1,0 +1,29 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model hand_records {
+  hand_id         String   @id @default(uuid()) @db.Uuid
+  table_id        String
+  played_at       DateTime @default(now()) @db.Timestamptz(6)
+
+  mode            String
+  stakes_sb       Int
+  stakes_bb       Int
+  hero_seat       Int
+
+  hero_net_result BigInt   @default(0)
+  winner_count    Int      @default(0)
+  auto_win        Boolean  @default(false)
+
+  // 詳細ログ（まずは全部まとめる）
+  payload         Json
+
+  @@index([table_id, played_at(sort: Desc), hand_id(sort: Desc)])
+  @@map("hand_records")
+}
