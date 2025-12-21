@@ -15,7 +15,7 @@ export async function registerDealRoutes(app: FastifyInstance) {
 
     const mode: Mode = body.mode ?? "dense";
 
-    const seatCountRaw = body.seatCount ?? 2;
+    const seatCountRaw = body.seatCount ?? body.playerOrder?.length ?? 2;
     const seatCount = Math.max(2, Math.min(8, Number(seatCountRaw)));
 
     const playerOrder = body.playerOrder ?? Array.from({ length: seatCount }, (_, i) => i);
