@@ -33,6 +33,7 @@ function mapHandRow(row: any) {
     heroNetResult: toNumber(row.hero_net_result),
     winnerCount: row.winner_count,
     autoWin: row.auto_win,
+    payload: row.payload ?? null,
   };
 }
 
