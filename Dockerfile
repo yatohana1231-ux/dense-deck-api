@@ -2,16 +2,20 @@ FROM node:22-alpine
 
 WORKDIR /app
 
-# 依存インストール（キャッシュ効かせる）
+# 依存関係だけ先に入れてキャッシュを効かせる
 COPY package.json package-lock.json* ./
 RUN npm install
 
-# ソース
+# Prisma schema を含めてクライアント生成
 COPY tsconfig.json ./
+COPY prisma ./prisma
+RUN npx prisma generate
+
+# ソース
 COPY src ./src
 COPY assets ./assets
 
-# 本番実行はビルド済みJSで
+# ビルド
 RUN npm run build
 
 ENV NODE_ENV=production
