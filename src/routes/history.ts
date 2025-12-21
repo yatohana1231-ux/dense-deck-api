@@ -12,7 +12,7 @@ type SaveHistoryRequest = {
   heroSeat: number;
   heroNetResult?: number | string;
   winnerCount?: number;
-  autoWin?: boolean;
+  autoWin?: boolean | number | null;
 };
 
 const toNumber = (v: unknown, fallback = 0) => {
@@ -64,7 +64,7 @@ export async function registerHistoryRoutes(app: FastifyInstance) {
         hero_seat: body.heroSeat,
         hero_net_result: BigInt(body.heroNetResult ?? 0),
         winner_count: Math.trunc(body.winnerCount ?? 0),
-        auto_win: body.autoWin ?? false,
+        auto_win: Boolean(body.autoWin ?? false),
         payload: {},
       },
     });
