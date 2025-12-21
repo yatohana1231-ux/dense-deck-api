@@ -10,6 +10,7 @@ datasource db {
 model hand_records {
   hand_id         String   @id @default(uuid()) @db.Uuid
   table_id        String
+  player_id       String?  @db.Text
   played_at       DateTime @default(now()) @db.Timestamptz(6)
 
   mode            String
