@@ -65,6 +65,7 @@ export async function registerHistoryRoutes(app: FastifyInstance) {
         hero_net_result: BigInt(body.heroNetResult ?? 0),
         winner_count: Math.trunc(body.winnerCount ?? 0),
         auto_win: body.autoWin ?? false,
+        payload: {},
       },
     });
 
