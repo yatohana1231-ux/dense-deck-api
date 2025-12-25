@@ -1,6 +1,7 @@
 import type { FastifyInstance } from "fastify";
 import { prisma } from "../utils/prisma.js";
 import { assert } from "../utils/assert.js";
+import { loadUserFromSession } from "../utils/auth.js";
 
 type SaveHistoryRequest = {
   handId: string;
@@ -40,6 +41,10 @@ function mapHandRow(row: any) {
 export async function registerHistoryRoutes(app: FastifyInstance) {
   // Save a hand record (minimal columns defined in Prisma schema)
   app.post("/api/history", async (req, reply) => {
+    const user = await loadUserFromSession(req, reply);
+    if (!user) {
+      return reply.code(401).send({ message: "Unauthorized" });
+    }
     const body = (req.body ?? {}) as SaveHistoryRequest;
 
     assert(typeof body.handId === "string" && body.handId.length > 0, "handId required");
@@ -68,6 +73,7 @@ export async function registerHistoryRoutes(app: FastifyInstance) {
         winner_count: Math.trunc(body.winnerCount ?? 0),
         auto_win: Boolean(body.autoWin ?? false),
         payload: body.payload ?? {},
+        user_id: user.userId,
       },
     });
 
@@ -76,12 +82,15 @@ export async function registerHistoryRoutes(app: FastifyInstance) {
 
   // List recent hand records
   app.get("/api/history", async (req, reply) => {
+    const user = await loadUserFromSession(req, reply);
+    if (!user) return reply.code(401).send({ message: "Unauthorized" });
     const query = req.query as { limit?: string };
     const limit = Math.min(Math.max(Number(query?.limit ?? 10), 1), 100);
 
     const rows = await prisma.hand_records.findMany({
       take: limit,
       orderBy: [{ played_at: "desc" }, { hand_id: "desc" }],
+      where: { user_id: user.userId },
     });
     return reply.send(rows.map(mapHandRow));
   });

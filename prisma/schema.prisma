@@ -11,6 +11,7 @@ model hand_records {
   hand_id         String   @id @default(uuid()) @db.Uuid
   table_id        String
   player_id       String?  @db.Text
+  user_id         String?  @db.Uuid
   played_at       DateTime @default(now()) @db.Timestamptz(6)
 
   mode            String
@@ -22,9 +23,52 @@ model hand_records {
   winner_count    Int      @default(0)
   auto_win        Boolean  @default(false)
 
-  // 詳細ログ（まずは全部まとめる）
   payload         Json
+
+  user            users?   @relation(fields: [user_id], references: [user_id])
 
   @@index([table_id, played_at(sort: Desc), hand_id(sort: Desc)])
   @@map("hand_records")
+}
+
+model users {
+  user_id          String   @id @default(uuid()) @db.Uuid
+  email            String?  @unique
+  password_hash    String?
+  username         String   @unique
+  username_changed Boolean  @default(false)
+  created_at       DateTime @default(now()) @db.Timestamptz(6)
+  updated_at       DateTime @updatedAt @db.Timestamptz(6)
+
+  sessions        sessions[]
+  hand_records    hand_records[]
+  password_resets password_reset_tokens[]
+
+  @@map("users")
+}
+
+model sessions {
+  session_id String   @id @default(uuid()) @db.Uuid
+  user_id    String   @db.Uuid
+  is_guest   Boolean  @default(true)
+  expires_at DateTime @db.Timestamptz(6)
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+
+  user users @relation(fields: [user_id], references: [user_id])
+
+  @@index([user_id])
+  @@map("sessions")
+}
+
+model password_reset_tokens {
+  token      String   @id @db.Uuid
+  user_id    String   @db.Uuid
+  expires_at DateTime @db.Timestamptz(6)
+  used       Boolean  @default(false)
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+
+  user users @relation(fields: [user_id], references: [user_id])
+
+  @@index([user_id])
+  @@map("password_reset_tokens")
 }

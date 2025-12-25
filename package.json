@@ -9,7 +9,9 @@
   },
   "dependencies": {
     "@prisma/client": "^6.19.1",
-    "fastify": "^4.28.1"
+    "fastify": "^4.28.1",
+    "bcryptjs": "^2.4.3",
+    "@fastify/cookie": "^9.4.0"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
