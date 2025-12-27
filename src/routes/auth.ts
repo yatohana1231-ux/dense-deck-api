@@ -61,9 +61,20 @@ export async function registerAuthRoutes(app: FastifyInstance) {
   });
 
   app.post("/api/auth/register", async (req, reply) => {
-    const body = (req.body ?? {}) as { email?: string; password?: string };
+    const body = (req.body ?? {}) as { email?: string; password?: string; username?: string; later?: boolean };
     assert(typeof body.email === "string" && body.email.length > 3, "email required");
     assert(typeof body.password === "string" && body.password.length >= 6, "password too short");
+
+    const wantsUsername = !!body.username && !body.later;
+    if (wantsUsername) {
+      if (!/^[A-Za-z0-9_.-]{1,20}$/.test(body.username ?? "")) {
+        return reply.code(400).send({ message: "Invalid username" });
+      }
+      const exists = await prisma.users.findUnique({ where: { username: body.username as string } });
+      if (exists) {
+        return reply.code(409).send({ message: "Username taken" });
+      }
+    }
 
     const existing = await prisma.users.findUnique({ where: { email: body.email } });
     if (existing) {
@@ -76,18 +87,28 @@ export async function registerAuthRoutes(app: FastifyInstance) {
     if (sessionUser) {
       // promote guest to registered
       userId = sessionUser.userId;
+      const data: any = { email: body.email, password_hash };
+      if (wantsUsername) {
+        data.username = body.username;
+        data.username_changed = true;
+      }
       await prisma.users.update({
         where: { user_id: userId },
-        data: { email: body.email, password_hash },
+        data,
       });
       // expire old session and create new registered session
-      if ((req.cookies as any)?.dd_session) {
-        await prisma.sessions.deleteMany({ where: { session_id: (req.cookies as any).dd_session } });
+      if ((req as any).cookies?.dd_session) {
+        await prisma.sessions.deleteMany({ where: { session_id: (req as any).cookies.dd_session } });
       }
     } else {
-      const username = makeUsername();
+      const username = wantsUsername ? (body.username as string) : makeUsername();
       const user = await prisma.users.create({
-        data: { email: body.email, password_hash, username },
+        data: {
+          email: body.email,
+          password_hash,
+          username,
+          username_changed: wantsUsername,
+        },
       });
       userId = user.user_id;
     }
