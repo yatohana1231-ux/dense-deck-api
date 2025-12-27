@@ -38,6 +38,7 @@ export async function registerAuthRoutes(app: FastifyInstance) {
       userId: user.user_id,
       isGuest: true,
       username: user.username,
+      usernameChanged: user.username_changed,
       email: user.email,
     });
   });
@@ -119,6 +120,7 @@ export async function registerAuthRoutes(app: FastifyInstance) {
       userId: user.user_id,
       isGuest: false,
       username: user.username,
+      usernameChanged: user.username_changed,
       email: user.email,
     });
   });

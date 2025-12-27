@@ -10,6 +10,7 @@ export type AuthUser = {
   userId: string;
   isGuest: boolean;
   username: string;
+  usernameChanged?: boolean;
   email?: string | null;
 };
 
@@ -76,6 +77,7 @@ export async function loadUserFromSession(
     userId: session.user_id,
     isGuest: session.is_guest,
     username: session.user.username,
+    usernameChanged: session.user.username_changed,
     email: session.user.email,
   };
 }
