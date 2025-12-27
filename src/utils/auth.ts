@@ -1,6 +1,6 @@
 import type { FastifyReply, FastifyRequest } from "fastify";
 import { prisma } from "./prisma.js";
-import { randomUUID, createHash, randomBytes } from "crypto";
+import { randomBytes } from "crypto";
 import bcrypt from "bcryptjs";
 
 const SESSION_COOKIE = "dd_session";
@@ -47,7 +47,7 @@ export async function loadUserFromSession(
   request: FastifyRequest,
   reply: FastifyReply
 ): Promise<AuthUser | null> {
-  const sessionId = (request.cookies as any)?.[SESSION_COOKIE];
+  const sessionId = (request as any).cookies?.[SESSION_COOKIE];
   if (!sessionId) return null;
 
   const session = await prisma.sessions.findUnique({
@@ -57,7 +57,7 @@ export async function loadUserFromSession(
   if (!session) return null;
   if (session.expires_at.getTime() < Date.now()) {
     await destroySession(session.session_id);
-    reply.clearCookie(SESSION_COOKIE);
+    (reply as any).clearCookie(SESSION_COOKIE);
     return null;
   }
   // sliding expiration
@@ -66,7 +66,7 @@ export async function loadUserFromSession(
     where: { session_id: session.session_id },
     data: { expires_at: newExpiry },
   });
-  reply.setCookie(SESSION_COOKIE, session.session_id, {
+  (reply as any).setCookie(SESSION_COOKIE, session.session_id, {
     path: "/",
     httpOnly: true,
     sameSite: "lax",
@@ -83,7 +83,7 @@ export async function loadUserFromSession(
 }
 
 export function attachSessionCookie(reply: FastifyReply, sessionId: string, expires: Date) {
-  reply.setCookie(SESSION_COOKIE, sessionId, {
+  (reply as any).setCookie(SESSION_COOKIE, sessionId, {
     path: "/",
     httpOnly: true,
     sameSite: "lax",
@@ -93,5 +93,5 @@ export function attachSessionCookie(reply: FastifyReply, sessionId: string, expi
 }
 
 export function clearSessionCookie(reply: FastifyReply) {
-  reply.clearCookie(SESSION_COOKIE, { path: "/" });
+  (reply as any).clearCookie(SESSION_COOKIE, { path: "/" });
 }

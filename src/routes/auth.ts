@@ -52,7 +52,7 @@ export async function registerAuthRoutes(app: FastifyInstance) {
   });
 
   app.post("/api/auth/logout", async (req, reply) => {
-    const sessionId = (req.cookies as any)?.dd_session;
+    const sessionId = (req as any).cookies?.dd_session;
     if (sessionId) {
       await prisma.sessions.deleteMany({ where: { session_id: sessionId } });
     }
@@ -111,8 +111,8 @@ export async function registerAuthRoutes(app: FastifyInstance) {
       return reply.code(401).send({ message: "Invalid credentials" });
     }
     // clear old session if any
-    if ((req.cookies as any)?.dd_session) {
-      await prisma.sessions.deleteMany({ where: { session_id: (req.cookies as any).dd_session } });
+    if ((req as any).cookies?.dd_session) {
+      await prisma.sessions.deleteMany({ where: { session_id: (req as any).cookies.dd_session } });
     }
     const session = await createSession(user.user_id, false);
     attachSessionCookie(reply, session.session_id, session.expires_at);
