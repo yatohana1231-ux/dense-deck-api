@@ -8,7 +8,7 @@
     "strict": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
-    "types": ["node", "@fastify/cookie", "@fastify/websocket"],
+    "types": ["node"],
     "resolveJsonModule": false
   },
   "include": ["src/**/*.ts"]
