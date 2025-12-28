@@ -1,17 +1,29 @@
+export const positions = ["BTN", "BB", "UTG", "CO"] as const;
+
 export function getPositions(btnIndex: number, playerCount: number) {
-  const btn = btnIndex % playerCount;
-  const bb = (btn + 1) % playerCount;
-  const utg = (btn + 2) % playerCount;
-  const co = (btn + 3) % playerCount;
-  return { btn, bb, utg, co };
+  const bb = (btnIndex + 1) % playerCount;
+  const utg = (btnIndex + 2) % playerCount;
+  const co = (btnIndex + 3) % playerCount;
+  return { btn: btnIndex, bb, utg, co };
 }
 
+// プリフロップ: UTG→CO→BTN→BB→UTG
 export function getPreflopOrder(btnIndex: number, playerCount: number): number[] {
-  const { utg, co, btn, bb } = getPositions(btnIndex, playerCount);
-  return [utg, co, btn, bb];
+  const { bb } = getPositions(btnIndex, playerCount);
+  const order: number[] = [];
+  for (let i = 1; i < playerCount; i++) {
+    order.push((bb + i) % playerCount);
+  }
+  order.push(bb);
+  return order;
 }
 
+// ポストフロップ: BB→UTG→CO→BTN→BB
 export function getPostflopOrder(btnIndex: number, playerCount: number): number[] {
-  const { bb, utg, co, btn } = getPositions(btnIndex, playerCount);
-  return [bb, utg, co, btn];
+  const { bb } = getPositions(btnIndex, playerCount);
+  const order: number[] = [bb];
+  for (let i = 1; i < playerCount; i++) {
+    order.push((bb + i) % playerCount);
+  }
+  return order;
 }
